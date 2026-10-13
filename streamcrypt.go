@@ -75,9 +75,9 @@ func (e *Encryptor) Write(p []byte) (n int, err error) {
 		if e.immutable {
 			buf = make([]byte, tlen)
 		} else {
-			buf = slices.Grow(p[:0], tlen)[:tlen] // grow argument's capacity to ensure it has enough space
+			buf = slices.Grow(p[:0], tlen)[:tlen] // grow argument's capacity (may reallocate: then buf is a new array)
 			copy(buf[prefixSize:], p[:plen])      // shift data, preserving space for prefix
-			p = p[prefixSize:]                    // update argument to use shifted space
+			p = buf[prefixSize : prefixSize+plen] // plaintext is the shifted copy inside buf, of the original length
 		}
 	} else {
 		if cap(e.wbuf) < tlen {
